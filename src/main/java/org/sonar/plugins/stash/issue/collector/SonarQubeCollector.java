@@ -40,33 +40,34 @@ public final class SonarQubeCollector {
    * Create issue report according to issue list generated during SonarQube
    * analysis.
    */
-  public static SonarQubeIssuesReport extractIssueReport(ProjectIssues projectIssues, InputFileCache inputFileCache, File projectBaseDir) {
+  public static SonarQubeIssuesReport extractIssueReport(ProjectIssues projectIssues, InputFileCache inputFileCache, File projectBaseDir, boolean includeExistingIssues) {
     SonarQubeIssuesReport result = new SonarQubeIssuesReport();
 
     for (Issue issue : projectIssues.issues()) {
-      if (! issue.isNew()){
+      if (!(issue.isNew() || includeExistingIssues)) {
         LOGGER.debug("Issue {} is not a new issue and so, not added to the report", issue.key());
+        continue;
+      }
+
+      String key = issue.key();
+      String severity = issue.severity();
+      String rule = issue.ruleKey().toString();
+      String message = issue.message();
+
+      int line = 0;
+      if (issue.line() != null) {
+        line = issue.line();
+      }
+
+      InputFile inputFile = inputFileCache.getInputFile(issue.componentKey());
+      if (inputFile == null){
+        LOGGER.debug("Issue {} is not linked to a file, not added to the report", issue.key());
       } else {
-        String key = issue.key();
-        String severity = issue.severity();
-        String rule = issue.ruleKey().toString();
-        String message = issue.message();
-  
-        int line = 0;
-        if (issue.line() != null) {
-          line = issue.line();
-        }
-  
-        InputFile inputFile = inputFileCache.getInputFile(issue.componentKey());
-        if (inputFile == null){
-          LOGGER.debug("Issue {} is not linked to a file, not added to the report", issue.key());
-        } else {
-          String path = new PathResolver().relativePath(projectBaseDir, inputFile.file());
-             
-          // Create the issue and Add to report
-          SonarQubeIssue stashIssue = new SonarQubeIssue(key, severity, message, rule, path, line);
-          result.add(stashIssue);
-        } 
+        String path = new PathResolver().relativePath(projectBaseDir, inputFile.file());
+
+        // Create the issue and Add to report
+        SonarQubeIssue stashIssue = new SonarQubeIssue(key, severity, message, rule, path, line);
+        result.add(stashIssue);
       }
     }
 

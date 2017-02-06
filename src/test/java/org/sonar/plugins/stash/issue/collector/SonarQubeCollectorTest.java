@@ -187,7 +187,7 @@ public class SonarQubeCollectorTest {
     ArrayList<Issue> issues = new ArrayList<Issue>();
     when(projectIssues.issues()).thenReturn(issues);
     
-    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir);
+    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir, false);
     assertTrue(report.countIssues() == 0);
   }
   
@@ -198,7 +198,7 @@ public class SonarQubeCollectorTest {
     issues.add(issue2);
     when(projectIssues.issues()).thenReturn(issues);
     
-    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir);
+    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir, false);
     assertTrue(report.countIssues() == 2);
     assertTrue(report.countIssues("severity1") == 1);
     assertTrue(report.countIssues("severity2") == 1);
@@ -223,7 +223,7 @@ public class SonarQubeCollectorTest {
     issues.add(issue1);
     when(projectIssues.issues()).thenReturn(issues);
     
-    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir);
+    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir, false);
     assertTrue(report.countIssues() == 1);
     assertTrue(report.countIssues("severity1") == 1);
     assertTrue(report.countIssues("severity2") == 0);
@@ -245,7 +245,7 @@ public class SonarQubeCollectorTest {
     issues.add(issue2);
     when(projectIssues.issues()).thenReturn(issues);
     
-    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir);
+    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir, false);
     assertTrue(report.countIssues() == 1);
     assertTrue(report.countIssues("severity1") == 0);
     assertTrue(report.countIssues("severity2") == 1);
@@ -260,7 +260,7 @@ public class SonarQubeCollectorTest {
     issues.add(issue2);
     when(projectIssues.issues()).thenReturn(issues);
     
-    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir);
+    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir, false);
     assertTrue(report.countIssues() == 1);
     assertTrue(report.countIssues("severity1") == 0);
     assertTrue(report.countIssues("severity2") == 1);
@@ -417,5 +417,21 @@ public class SonarQubeCollectorTest {
     } catch (SonarQubeReportExtractionException e) {
       assertTrue("ParseException has been raised as expected", true);
     }
+  }
+
+  @Test
+  public void testExtractIssueReportWithIncludeExistingIssuesOption() {
+    when(issue1.isNew()).thenReturn(false);
+    when(issue2.isNew()).thenReturn(true);
+
+    ArrayList<Issue> issues = new ArrayList<Issue>();
+    issues.add(issue1);
+    issues.add(issue2);
+    when(projectIssues.issues()).thenReturn(issues);
+
+    SonarQubeIssuesReport report = SonarQubeCollector.extractIssueReport(projectIssues, inputFileCache, projectBaseDir, true);
+    assertTrue(report.countIssues() == 2);
+    assertTrue(report.countIssues("severity1") == 1);
+    assertTrue(report.countIssues("severity2") == 1);
   }
 }
