@@ -1,5 +1,7 @@
 package org.sonar.plugins.stash.issue;
 
+import com.google.common.collect.Range;
+
 import org.apache.commons.lang3.StringUtils;
 import org.sonar.plugins.stash.StashPlugin;
 
@@ -16,6 +18,8 @@ import java.util.List;
 public class StashDiffReport {
 
   private List<StashDiff> diffs;
+
+  public static final int VICINITY_RANGE_NONE = 0;
 
   public StashDiffReport() {
     this.diffs = new ArrayList<>();
@@ -34,34 +38,29 @@ public class StashDiffReport {
       diffs.add(diff);  
     }
   }
-  
-  public String getType(String path, long destination){
-    String result   = null;
-    Boolean foundIt = false;
-    
+
+  private static boolean includeVicinityIssuesForDiff(StashDiff diff, long destination, int range) {
+    if (range <= 0) {
+      return false;
+    }
+    return Range.closed(diff.getSource() - range, diff.getDestination() + range).contains(destination);
+  }
+
+  public String getType(String path, long destination, int vicinityRange){
     for (StashDiff diff : diffs) {
-      // Line 0 never belongs to Stash Diff view.
-      // It is a global comment with a type set to CONTEXT.
-      if (StringUtils.equals(diff.getPath(), path) && (destination == 0)) {
-        result  = StashPlugin.CONTEXT_ISSUE_TYPE;
-        foundIt = true;
-      } else {
-        
-        if (StringUtils.equals(diff.getPath(), path) && (diff.getDestination() == destination)) {
-          result  = diff.getType();
-          foundIt = true;
+      if (StringUtils.equals(diff.getPath(), path)) {
+        // Line 0 never belongs to Stash Diff view.
+        // It is a global comment with a type set to CONTEXT.
+        if (destination == 0) {
+          return StashPlugin.CONTEXT_ISSUE_TYPE;
+        } else if (destination == diff.getDestination() || includeVicinityIssuesForDiff(diff, destination, vicinityRange)) {
+          return diff.getType();
         }
       }
-
-      // Centralizing the loop shortcut (squid:S135)
-      if (foundIt) {
-        break;
-      }
     }
-
-    return result;
+    return null;
   }
-  
+
   /**
    * Depends on the type of the diff.
    * If type == "CONTEXT", return the source line of the diff.
@@ -111,4 +110,5 @@ public class StashDiffReport {
     }
     return result;
   }
+
 }

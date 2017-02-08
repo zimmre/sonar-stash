@@ -194,7 +194,7 @@ public class StashRequestFacade implements BatchComponent {
         }
 
         // check if issue belongs to the Stash diff view
-        String type = diffReport.getType(issue.getPath(), issue.getLine());
+        String type = diffReport.getType(issue.getPath(), issue.getLine(), config.issueVicinityRange());
         if (type == null) {
           LOGGER.info("Comment \"{}\" cannot be pushed to Stash like it does not belong to diff view - {} (line: {})",
                   issue.getKey(), issue.getPath(), issue.getLine());

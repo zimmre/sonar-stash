@@ -3,6 +3,7 @@ package org.sonar.plugins.stash;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -118,7 +119,7 @@ public class StashRequestFacadeTest extends StashTest {
     
     diffReport = mock(StashDiffReport.class);
     
-    when(diffReport.getType(anyString(), anyLong())).thenReturn(STASH_DIFF_TYPE);
+    when(diffReport.getType(anyString(), anyLong(), anyInt())).thenReturn(STASH_DIFF_TYPE);
     when(diffReport.getLine(FILE_PATH_1, 1)).thenReturn((long) 1);
     when(diffReport.getLine(FILE_PATH_1, 2)).thenReturn((long) 2);
     when(diffReport.getLine(FILE_PATH_2, 1)).thenReturn((long) 1);
@@ -446,9 +447,9 @@ public class StashRequestFacadeTest extends StashTest {
     when(stashCommentsReport1.contains(stashCommentMessage2, FILE_PATH_1, 2)).thenReturn(false);
     when(stashCommentsReport2.contains(stashCommentMessage3, FILE_PATH_2, 1)).thenReturn(false);
     
-    when(diffReport.getType(FILE_PATH_1, 1)).thenReturn(null);
-    when(diffReport.getType(FILE_PATH_1, 2)).thenReturn(STASH_DIFF_TYPE);
-    when(diffReport.getType(FILE_PATH_2, 1)).thenReturn(null);
+    when(diffReport.getType(FILE_PATH_1, 1, config.issueVicinityRange())).thenReturn(null);
+    when(diffReport.getType(FILE_PATH_1, 2, config.issueVicinityRange())).thenReturn(STASH_DIFF_TYPE);
+    when(diffReport.getType(FILE_PATH_2, 1, config.issueVicinityRange())).thenReturn(null);
     
     myFacade.postSonarQubeReport(pr, SONARQUBE_URL, issueReport, diffReport, stashClient);
     
@@ -659,5 +660,22 @@ public class StashRequestFacadeTest extends StashTest {
     List<String> severities = myFacade.getReportedSeverities();
     
     assertEquals(0, severities.size());
+  }
+
+  @Test
+  public void testPostCommentPerIssueWithIncludeVicinityIssues() throws Exception {
+    when(config.issueVicinityRange()).thenReturn(10);
+    when(stashCommentsReport1.contains(stashCommentMessage1, FILE_PATH_1, 1)).thenReturn(false);
+    when(stashCommentsReport1.contains(stashCommentMessage2, FILE_PATH_1, 2)).thenReturn(false);
+    when(stashCommentsReport2.contains(stashCommentMessage3, FILE_PATH_2, 1)).thenReturn(false);
+    when(diffReport.getType(FILE_PATH_1, 1, config.issueVicinityRange())).thenReturn(STASH_DIFF_TYPE);
+    when(diffReport.getType(FILE_PATH_1, 2, config.issueVicinityRange())).thenReturn(STASH_DIFF_TYPE);
+    when(diffReport.getType(FILE_PATH_2, 1, config.issueVicinityRange())).thenReturn(STASH_DIFF_TYPE);
+
+    myFacade.postCommentPerIssue(pr, SONARQUBE_URL, issueReport.getIssues(), diffReport, stashClient);
+
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage1, FILE_PATH_1, 1, STASH_DIFF_TYPE);
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage2, FILE_PATH_1, 2, STASH_DIFF_TYPE);
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage3, FILE_PATH_2, 1, STASH_DIFF_TYPE);
   }
 }

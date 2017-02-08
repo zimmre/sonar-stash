@@ -8,6 +8,7 @@ import org.sonar.api.SonarPlugin;
 import org.sonar.api.config.PropertyDefinition;
 import org.sonar.api.resources.Qualifiers;
 import org.sonar.api.rule.Severity;
+import org.sonar.plugins.stash.issue.StashDiffReport;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +25,7 @@ public class StashPlugin extends SonarPlugin {
   private static final String DEFAULT_STASH_THRESHOLD_VALUE = "100";
   private static final boolean DEFAULT_STASH_ANALYSIS_OVERVIEW = true;
   private static final boolean DEFAULT_STASH_INCLUDE_EXISTING_ISSUES = false;
+  private static final int DEFAULT_STASH_INCLUDE_VICINITY_RANGE = StashDiffReport.VICINITY_RANGE_NONE;
 
   private static final String CONFIG_PAGE_SUB_CATEGORY_STASH = "Stash";
   
@@ -53,6 +55,8 @@ public class StashPlugin extends SonarPlugin {
   public static final String STASH_CODE_COVERAGE_SEVERITY = "sonar.stash.coverage.severity.threshold";
   public static final String STASH_INCLUDE_ANALYSIS_OVERVIEW = "sonar.stash.include.overview";
   public static final String STASH_INCLUDE_EXISTING_ISSUES = "sonar.stash.include.existing.issues";
+  public static final String STASH_INCLUDE_VICINITY_RANGE = "sonar.stash.include.vicinity.issues.range";
+
 
   @Override
   public List getExtensions() {
@@ -124,7 +128,14 @@ public class StashPlugin extends SonarPlugin {
             .type(PropertyType.BOOLEAN)
             .subCategory(CONFIG_PAGE_SUB_CATEGORY_STASH)
             .onQualifiers(Qualifiers.PROJECT)
-            .defaultValue(Boolean.toString(DEFAULT_STASH_INCLUDE_EXISTING_ISSUES)).build()
+            .defaultValue(Boolean.toString(DEFAULT_STASH_INCLUDE_EXISTING_ISSUES)).build(),
+        PropertyDefinition.builder(STASH_INCLUDE_VICINITY_RANGE)
+            .name("Include Vicinity Issues Range")
+            .description("Specifies the range around the actual changes for which issues are reported. (In lines)")
+            .type(PropertyType.INTEGER)
+            .subCategory(CONFIG_PAGE_SUB_CATEGORY_STASH)
+            .onQualifiers(Qualifiers.PROJECT)
+            .defaultValue(String.valueOf(DEFAULT_STASH_INCLUDE_VICINITY_RANGE)).build()
     );
   }
 }

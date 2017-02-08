@@ -86,4 +86,8 @@ public class StashPluginConfiguration implements BatchComponent {
     return settings.getBoolean(StashPlugin.STASH_INCLUDE_EXISTING_ISSUES);
   }
 
+  public int issueVicinityRange() {
+      return settings.getInt(StashPlugin.STASH_INCLUDE_VICINITY_RANGE);
+  }
+
 }
