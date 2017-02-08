@@ -65,4 +65,9 @@ public class CoverageIssue extends Issue {
     return sb.toString();
   }
 
+  @Override
+  public String getRule() {
+    return null;
+  }
+
 }

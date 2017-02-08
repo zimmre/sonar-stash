@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -163,6 +164,8 @@ public class StashRequestFacade implements BatchComponent {
   void postCommentPerIssue(PullRequestRef pr, String sonarQubeURL,
                            Collection<Issue> issues, StashDiffReport diffReport, StashClient stashClient) throws StashClientException {
 
+    Set<String> excludedRules = config.excludedRules();
+
     // to optimize request to Stash, builds comment match ordered by filepath
     Map<String, StashCommentReport> commentsByFile = new HashMap<>();
     for (Issue issue : issues) {
@@ -199,6 +202,10 @@ public class StashRequestFacade implements BatchComponent {
           LOGGER.info("Comment \"{}\" cannot be pushed to Stash like it does not belong to diff view - {} (line: {})",
                   issue.getKey(), issue.getPath(), issue.getLine());
           continue;  // Next element in "issue_loop"
+        }
+
+        if (excludedRules.contains(issue.getRule())) {
+          continue;
         }
 
         long line = diffReport.getLine(issue.getPath(), issue.getLine());

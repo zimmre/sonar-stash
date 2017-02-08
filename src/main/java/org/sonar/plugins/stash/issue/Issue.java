@@ -33,5 +33,6 @@ public abstract class Issue {
   public abstract String getMessage();
   
   public abstract String printIssueMarkdown(String sonarQubeURL);
+  public abstract String getRule();
   
 }

@@ -59,6 +59,8 @@ Go to Stash general settings screen on SonarQube server to fill:
 
 **Include Vicinity Issues Range** (sonar.stash.include.vicinity.issues.range): Specifies in which area (in lines) around the current diff issues should be reported
 
+**Excluded Rules** (sonar.stash.exclude.rules): Comma separated list of rules for which no comments should be created.
+
 ![Screenshot SonarQube plugin](resources/Sonar-plugin-approver.PNG)
 
 **Stash tasks severity threshold** (sonar.stash.task.issue.severity.threshold): SonarQube is able to create tasks for all issues with a severity higher to the threshold. By default, this feature is deactivated (threshold: NONE). 

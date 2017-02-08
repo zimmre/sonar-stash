@@ -18,7 +18,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -676,6 +678,45 @@ public class StashRequestFacadeTest extends StashTest {
 
     verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage1, FILE_PATH_1, 1, STASH_DIFF_TYPE);
     verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage2, FILE_PATH_1, 2, STASH_DIFF_TYPE);
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage3, FILE_PATH_2, 1, STASH_DIFF_TYPE);
+  }
+
+  @Test
+  public void testPostCommentPerIssueWithEmptyExcludeRules() throws Exception {
+    Set<String> excluded = new HashSet<>();
+    when(config.excludedRules()).thenReturn(excluded);
+
+    myFacade.postCommentPerIssue(pr, SONARQUBE_URL, issueReport.getIssues(), diffReport, stashClient);
+
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage1, FILE_PATH_1, 1, STASH_DIFF_TYPE);
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage2, FILE_PATH_1, 2, STASH_DIFF_TYPE);
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage3, FILE_PATH_2, 1, STASH_DIFF_TYPE);
+  }
+
+  @Test
+  public void testPostCommentPerIssueWithSingleeExcludeRules() throws Exception {
+    Set<String> excluded = new HashSet<>();
+    excluded.add("rule2");
+    when(config.excludedRules()).thenReturn(excluded);
+
+    myFacade.postCommentPerIssue(pr, SONARQUBE_URL, issueReport.getIssues(), diffReport, stashClient);
+
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage1, FILE_PATH_1, 1, STASH_DIFF_TYPE);
+    verify(stashClient, times(0)).postCommentLineOnPullRequest(pr, stashCommentMessage2, FILE_PATH_1, 2, STASH_DIFF_TYPE);
+    verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage3, FILE_PATH_2, 1, STASH_DIFF_TYPE);
+  }
+
+  @Test
+  public void testPostCommentPerIssueWithMultipleExcludeRules() throws Exception {
+    Set<String> excluded = new HashSet<>();
+    excluded.add("rule1");
+    excluded.add("rule2");
+    when(config.excludedRules()).thenReturn(excluded);
+
+    myFacade.postCommentPerIssue(pr, SONARQUBE_URL, issueReport.getIssues(), diffReport, stashClient);
+
+    verify(stashClient, times(0)).postCommentLineOnPullRequest(pr, stashCommentMessage1, FILE_PATH_1, 1, STASH_DIFF_TYPE);
+    verify(stashClient, times(0)).postCommentLineOnPullRequest(pr, stashCommentMessage2, FILE_PATH_1, 2, STASH_DIFF_TYPE);
     verify(stashClient, times(1)).postCommentLineOnPullRequest(pr, stashCommentMessage3, FILE_PATH_2, 1, STASH_DIFF_TYPE);
   }
 }
