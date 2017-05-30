@@ -3,7 +3,7 @@
 
   <groupId>org.sonar</groupId>
   <artifactId>sonar-stash-plugin</artifactId>
-  <version>1.3.0-CUSTOM-ATL1</version>
+  <version>1.3.1-CUSTOM-ATL1-SNAPSHOT</version>
   <packaging>sonar-plugin</packaging>
   <description>Integration between Atlassian Stash (BitBucket) and SonarQube</description>
   <name>Stash</name>
@@ -21,7 +21,7 @@
     <connection>scm:git:git@github.com:zimmre/sonar-stash.git</connection>
     <developerConnection>scm:git:git@github.com:zimmre/sonar-stash.git</developerConnection>
     <url>https://github.com/zimmre/sonar-stash</url>
-    <tag>1.3.0-CUSTOM-ATL1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
