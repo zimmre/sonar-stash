@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.net.HttpURLConnection.HTTP_CREATED;
@@ -360,6 +361,28 @@ public class StashClientTest extends StashTest {
 
     client.getPullRequestComments(pr, "something");
     wireMock.verify(getRequestedFor(urlPathMatching(".*/pull-requests/1234567890/comments.*")));
+  }
+
+  @Test
+  public void testPullRequestIdByBranch() throws Exception {
+    wireMock.stubFor(any(anyUrl()).willReturn(aJsonResponse().withBody("{\n" +
+            "  \"size\": 1,\n" +
+            "  \"limit\": 25,\n" +
+            "  \"isLastPage\": true,\n" +
+            "  \"values\": [\n" +
+            "    {\n" +
+            "      \"id\": 1955,\n" +
+            "      \"version\": 1,\n" +
+            "    }\n" +
+            "  ],\n" +
+            "  \"start\": 0\n" +
+            "}")));
+
+    Integer pullRequestId = client.getPullRequestId("Project", "Repository", "foo");
+
+    wireMock.verify(getRequestedFor(urlMatching(".*/pull-requests\\?direction=outgoing&at=.*")));
+
+    assertEquals(pullRequestId.longValue(), 1955L);
   }
 
   private void addErrorResponse(MappingBuilder mapping, int statusCode) {

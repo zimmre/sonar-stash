@@ -96,6 +96,7 @@ public class StashRequestFacadeTest extends StashTest {
   
   private static final String STASH_PROJECT = "Project";
   private static final String STASH_REPOSITORY = "Repository";
+  private static final String STASH_BRANCH_NAME = "branchname";
   private static final int STASH_PULLREQUEST_ID = 1;
   private static final PullRequestRef pr = PullRequestRef.builder()
           .setProject(STASH_PROJECT)
@@ -321,7 +322,30 @@ public class StashRequestFacadeTest extends StashTest {
     when(config.getPullRequestId()).thenReturn(12345);
     assertEquals(myFacade.getStashPullRequestId(stashClient), 12345);
   }
-  
+
+  @Test
+  public void testGetStashPullRequestIdByStashBranchName() throws StashConfigurationException, StashClientException {
+    when(config.getPullRequestId()).thenReturn(0);
+    when(config.getStashRepository()).thenReturn(STASH_REPOSITORY);
+    when(config.getStashProject()).thenReturn(STASH_PROJECT);
+    when(config.getSonarStashBranch()).thenReturn(STASH_BRANCH_NAME);
+    when(stashClient.getPullRequestId(STASH_PROJECT, STASH_REPOSITORY, STASH_BRANCH_NAME)).thenReturn(12345);
+
+    assertEquals(myFacade.getStashPullRequestId(stashClient), 12345);
+  }
+
+  @Test
+  public void testGetStashPullRequestIdBySonarBranchName() throws StashConfigurationException, StashClientException {
+    when(config.getPullRequestId()).thenReturn(0);
+    when(config.getStashRepository()).thenReturn(STASH_REPOSITORY);
+    when(config.getStashProject()).thenReturn(STASH_PROJECT);
+    when(config.getSonarStashBranch()).thenReturn(null);
+    when(config.getSonarBranch()).thenReturn(STASH_BRANCH_NAME);
+    when(stashClient.getPullRequestId(STASH_PROJECT, STASH_REPOSITORY, STASH_BRANCH_NAME)).thenReturn(12345);
+
+    assertEquals(myFacade.getStashPullRequestId(stashClient), 12345);
+  }
+
   @Test (expected = StashConfigurationException.class)
   public void testGetStashPullRequestIdThrowsException() throws StashConfigurationException {
     when(config.getPullRequestId()).thenReturn(null);

@@ -245,7 +245,7 @@ public class StashClient implements AutoCloseable {
     JSONObject jsonPR = get(request, "Error getting pull request info");
     long size = (long)jsonPR.get("size");
     if (size != 1) {
-      throw new StashClientException("Unable to find suitable pull request. Response size = " + size);
+      throw new StashClientException("Unable to find unique pull request, found " + size + " pull request");
     }
     JSONArray prs = (JSONArray)jsonPR.get("values");
     JSONObject pr = (JSONObject) prs.get(0);
